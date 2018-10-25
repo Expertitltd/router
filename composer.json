@@ -6,7 +6,7 @@
     "bitrix",
     "routing"
   ],
-  "license": "Skalar",
+  "license": "MIT",
   "authors": [
     {
       "name": "Dmitry Skriplyonok",
