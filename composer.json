@@ -17,7 +17,7 @@
   ],
   "minimum-stability": "dev",
   "require": {
-    "php": ">=5.6.0",
+    "php": ">=5.6.0"
   },
   "require-dev": {
     "symfony/http-foundation": "^3.4",
