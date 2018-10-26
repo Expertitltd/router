@@ -1,0 +1,8 @@
+test:
+  path:     /test/{param}
+  controller: TestController::test
+  requirements:
+      param: \d+
+404:
+  path:     /404
+  controller: NotFoundController::index

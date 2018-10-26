@@ -2,7 +2,6 @@
 
 namespace Skalar;
 
-use Bitrix\Main\Diag\Debug;
 use Bitrix\Main\Loader;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Routing\Loader\YamlFileLoader;
@@ -189,7 +188,7 @@ class Router extends \CBitrixComponent
                     throw new \Exception(sprintf('File "%s" is not exist.', $classPath));
                 }
                 $middleware = $this->instantiateClass($class);
-                $state = $middleware($state, $this->request);
+                $state = $middleware($this->request, $state);
             }
         }
         return $state;
