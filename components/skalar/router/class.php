@@ -5,4 +5,7 @@ use Skalar\Router;
 /**
  * Class Router
  */
-class SkalarRouter extends Router {}
+class SkalarRouter extends Router
+{
+
+}

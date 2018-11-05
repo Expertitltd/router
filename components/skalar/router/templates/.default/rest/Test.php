@@ -2,9 +2,18 @@
 
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * Class Test
+ */
 class Test
 {
-    public function get(Request $request, array $state){
+    /**
+     * @param Request $request
+     * @param array $state
+     * @return array
+     */
+    public function get(Request $request, array $state)
+    {
         // do something
         return $state;
     }

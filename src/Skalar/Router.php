@@ -63,10 +63,6 @@ class Router extends \CBitrixComponent
         $this->middlewareDir = 'middleware';
         $this->config = [];
 
-        $this->includeModules([
-            'expertit.site'
-        ]);
-
         parent::__construct($component);
     }
 
@@ -79,16 +75,16 @@ class Router extends \CBitrixComponent
         $this->request = Request::createFromGlobals();
         $this->initRouter();
         $state = $this->getState();
-        try{
-            if($this->isRest()){
+        try {
+            if($this->isRest()) {
                 $state = $this->executeRestController($state);
-            }else{
+            } else {
                 $parameters = $this->router->matchRequest($this->request);
                 $this->request->attributes->add($parameters);
                 $state = $this->executeController($state);
             }
             $state = $this->runMiddleware($state);
-        }catch(\Exception $e){
+        } catch(\Exception $e) {
             print_r($e->getMessage());
             $state = $this->callController('NotFoundController::index', $state);
         }
@@ -99,9 +95,10 @@ class Router extends \CBitrixComponent
     /**
      * @param array $state
      * @return string
+     * @todo get and call render function from External class (from config)
      */
-    protected function render(array $state){
-        //todo get and call render function from External class (from config)
+    protected function render(array $state)
+    {
         $response = json_encode($state);
         return $response;
     }
@@ -109,17 +106,19 @@ class Router extends \CBitrixComponent
     /**
      * @param $response
      */
-    protected function echoResponse($response){
+    protected function echoResponse($response)
+    {
         echo $response;
         exit();
     }
 
     /**
      * @return array
+     * @todo create state
      */
-    protected function getState(){
+    protected function getState()
+    {
         $state = [];
-        //todo create state
         $state['state'] = 'state';
         return $state;
     }
@@ -128,9 +127,10 @@ class Router extends \CBitrixComponent
      * @param array $modules
      * @throws \Exception
      */
-    protected function includeModules(array $modules){
-        foreach($modules as $module){
-            if(!Loader::includeModule($module)){
+    protected function includeModules(array $modules)
+    {
+        foreach($modules as $module) {
+            if(!Loader::includeModule($module)) {
                 throw new \Exception(sprintf('%s module not included!', $module));
             }
         }
@@ -139,17 +139,18 @@ class Router extends \CBitrixComponent
     /**
      *
      */
-    protected function initConfig(){
+    protected function initConfig()
+    {
         $fileList = $this->getAllFolderFiles($this->configDir);
         $this->config['paths'] = [];
-        foreach($fileList as $fileName){
+        foreach($fileList as $fileName) {
             list($name, $extension) = explode('.', $fileName, 2);
-            if($name && $extension == 'yaml'){
-                try{
-                    $path = $this->getFullTemplateFolder($this->configDir).'/'.$fileName;
+            if($name && $extension == 'yaml') {
+                try {
+                    $path = $this->getFullTemplateFolder($this->configDir) . '/' . $fileName;
                     $this->config['paths'][$name] = $path;
                     $this->config[$name] = Yaml::parseFile($path);
-                }catch(\Exception $exception){
+                } catch (\Exception $exception) {
                     printf('Unable to parse the YAML string: %s', $exception->getMessage()); //todo write to log
                 }
             }
@@ -159,7 +160,8 @@ class Router extends \CBitrixComponent
     /**
      *
      */
-    protected function initRouter(){
+    protected function initRouter()
+    {
         $fileLocator = new FileLocator(array(__DIR__));
         $requestContext = new RequestContext();
         $requestContext->fromRequest($this->request);
@@ -176,15 +178,16 @@ class Router extends \CBitrixComponent
      * @return mixed
      * @throws \Exception
      */
-    protected function runMiddleware($state){
+    protected function runMiddleware($state)
+    {
         $fileList = $this->getAllFolderFiles($this->middlewareDir);
-        foreach($fileList as $fileName){
+        foreach($fileList as $fileName) {
             list($class, $extension) = explode('.', $fileName, 2);
-            if($extension == 'php'){
-                $classPath = $this->getFullTemplateFolder($this->middlewareDir).'/'.$fileName;
-                if(file_exists($classPath)){
+            if($extension == 'php') {
+                $classPath = $this->getFullTemplateFolder($this->middlewareDir) . '/' . $fileName;
+                if(file_exists($classPath)) {
                     require_once($classPath);
-                }else{
+                } else {
                     throw new \Exception(sprintf('File "%s" is not exist.', $classPath));
                 }
                 $middleware = $this->instantiateClass($class);
@@ -198,7 +201,8 @@ class Router extends \CBitrixComponent
      * @param array $state
      * @return mixed
      */
-    private function executeController(array $state){
+    private function executeController(array $state)
+    {
         $this->loadController();
         $controllerResolver = new ControllerResolver();
         $controller = $controllerResolver->getController($this->request);
@@ -209,7 +213,8 @@ class Router extends \CBitrixComponent
      * @param array $state
      * @return mixed
      */
-    private function executeRestController(array $state){
+    private function executeRestController(array $state)
+    {
         $controller = $this->getRestControllerParams();
         $this->loadRestController($controller);
         $callable = $this->getRestController($controller);
@@ -223,40 +228,45 @@ class Router extends \CBitrixComponent
     /**
      * @return bool
      */
-    protected function isRest(){
+    protected function isRest() {
         return explode('/', trim($this->request->getPathInfo(), '/'))[0] == $this->restRoute;
     }
 
     /**
      * @return array
      */
-    protected function getRestControllerParams(){
+    protected function getRestControllerParams()
+    {
         $pathInfo = trim($this->request->getPathInfo(), '/');
         $arPaths = explode('/', $pathInfo);
         array_shift($arPaths);
         $controller = ucfirst(array_shift($arPaths));
-        if(!empty($arPaths)){
+        if(!empty($arPaths)) {
             throw new NotFoundHttpException(sprintf('URI "%s" is not exist.', $this->request->getPathInfo()));
         }
-        if(empty($controller)){
+        if(empty($controller)) {
             throw new \InvalidArgumentException(sprintf('Controller "%s" for URI "%s" is not exist.', $controller, $this->request->getPathInfo()));
         }
         $action = strtolower($this->request->getMethod());
-        if(empty($action)){
+        if(empty($action)) {
             throw new \InvalidArgumentException(sprintf('Action "%s" for URI "%s" is not exist.', $action, $this->request->getPathInfo()));
         }
-        return [$controller, $action];
+        return [
+            $controller,
+            $action
+        ];
     }
 
     /**
      * @param array $controller
      */
-    private function loadRestController(array $controller){
+    private function loadRestController(array $controller)
+    {
         $class = $controller[0];
-        $classPath = $this->getFullTemplateFolder($this->restDir).'/'.$class.'.php';
-        if(file_exists($classPath)){
+        $classPath = $this->getFullTemplateFolder($this->restDir) . '/' . $class . '.php';
+        if(file_exists($classPath)) {
             require_once($classPath);
-        }else{
+        } else {
             throw new NotFoundHttpException(sprintf('Controller "%s" for URI "%s" is not exist.', $class, $this->request->getPathInfo()));
         }
     }
@@ -265,8 +275,11 @@ class Router extends \CBitrixComponent
      * @param array $controller
      * @return array
      */
-    private function getRestController(array $controller){
-        return [$this->instantiateClass($controller[0]), $controller[1]];
+    private function getRestController(array $controller) {
+        return [
+            $this->instantiateClass($controller[0]),
+            $controller[1]
+        ];
     }
 
     /**
@@ -274,13 +287,14 @@ class Router extends \CBitrixComponent
      * @param array $arguments
      * @return mixed
      */
-    public function callController($controller, $state, array $arguments = []){
+    public function callController($controller, $state, array $arguments = [])
+    {
         $this->loadController($controller);
         $callable = $this->createController($controller);
         if (!\is_callable($callable)) {
             throw new \InvalidArgumentException(sprintf('The controller %s is not callable.', $callable));
         }
-        if($arguments){
+        if($arguments) {
             $this->request->attributes->add($arguments);
         }
         return \call_user_func_array($callable, [$this->request, $state]);
@@ -289,7 +303,7 @@ class Router extends \CBitrixComponent
     /**
      * @param string $class
      */
-    private function loadController($class = ''){
+    private function loadController($class = '') {
         $class = empty($class) ? $this->request->attributes->get('_controller') : $class;
         $class = explode('::', $class)[0];
         $arClassPath = [
@@ -301,9 +315,9 @@ class Router extends \CBitrixComponent
         $className = end($arClass);
         $arClassPath[] = $className;
         $classPath = $_SERVER['DOCUMENT_ROOT'].$this->getPath().'/'.implode('/', $arClassPath).'.php';
-        if(file_exists($classPath)){
+        if(file_exists($classPath)) {
             require_once($classPath);
-        }else{
+        } else {
             throw new NotFoundHttpException(sprintf('Controller "%s" for URI "%s" is not exist.', $class, $this->request->getPathInfo()));
         }
     }
@@ -336,7 +350,8 @@ class Router extends \CBitrixComponent
     /**
      * @return string
      */
-    public function getTemplateNameExt(){
+    public function getTemplateNameExt()
+    {
         $templateName = $this->getTemplateName();
         return $templateName ? $templateName : '.default';
     }
@@ -344,13 +359,14 @@ class Router extends \CBitrixComponent
     /**
      * @return null|string
      */
-    public function getTemplateFolder(){
+    public function getTemplateFolder()
+    {
         $folder = '';
         $template = $this->getTemplate();
-        if($template instanceof \CBitrixComponentTemplate){
+        if($template instanceof \CBitrixComponentTemplate) {
             $folder = $template->GetFolder();
-        }else{
-            $folder = $this->getPath().'/templates/'.$this->getTemplateNameExt();
+        } else {
+            $folder = $this->getPath() . '/templates/' . $this->getTemplateNameExt();
         }
         return $folder;
     }
@@ -359,10 +375,11 @@ class Router extends \CBitrixComponent
      * @param string $folder
      * @return string
      */
-    public function getFullTemplateFolder($folder = ''){
+    public function getFullTemplateFolder($folder = '')
+    {
         $resFolder = $_SERVER["DOCUMENT_ROOT"].$this->getTemplateFolder();
-        if($folder){
-            $resFolder .= '/'.$folder;
+        if($folder) {
+            $resFolder .= '/' . $folder;
         }
         return $resFolder;
     }
@@ -371,7 +388,8 @@ class Router extends \CBitrixComponent
      * @param $folder
      * @return array
      */
-    private function getAllFolderFiles($folder){
+    private function getAllFolderFiles($folder)
+    {
         $dirPath = $this->getFullTemplateFolder($folder);
         $fileList = scandir($dirPath);
         $fileList = array_diff($fileList, ['.', '..']);
