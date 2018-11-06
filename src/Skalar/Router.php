@@ -76,6 +76,7 @@ class Router extends \CBitrixComponent
         $this->request->setBaseUrl($this->getBaseUrl());
         $this->initRouter();
         $state = $this->getState();
+        $state = $this->runMiddleware($state);
         try {
             if($this->isRest()) {
                 $state = $this->executeRestController($state);
@@ -84,9 +85,7 @@ class Router extends \CBitrixComponent
                 $this->request->attributes->add($parameters);
                 $state = $this->executeController($state);
             }
-            $state = $this->runMiddleware($state);
         } catch(\Exception $e) {
-            print_r($e->getMessage());
             $state = $this->callController('NotFoundController::index', $state);
         }
         $response = $this->render($state);
