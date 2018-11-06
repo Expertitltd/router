@@ -1,11 +1,12 @@
 <?php
 
+use Skalar\Controller;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Class TestController
  */
-class TestController
+class TestController extends Controller
 {
     /**
      * @param Request $request

@@ -16,11 +16,12 @@ $APPLICATION->IncludeComponent(
      false
  );
 
-work with templates .default (or another template)
-routes configure config/routes.yaml
-rest path must have /rest as first part and name controller as second
-rest action is method request (get, post, ...)
-all action have two arguments: Symfony\Component\HttpFoundation\Request $request, array $state; return array $state
+Work with templates .default (or another template).
+Routes configure config/routes.yaml.
+Controllers must extends Skalar\Controller.
+Rest path must have /rest as first part and name controller as second.
+Rest action is method request (get, post, ...).
+All action have two arguments: Symfony\Component\HttpFoundation\Request $request, array $state; return array $state.
 
 params:
 BASE_URL - routing folder (optional)
