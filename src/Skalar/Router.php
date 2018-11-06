@@ -4,13 +4,13 @@ namespace Skalar;
 
 use Bitrix\Main\Loader;
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Router as SymfonyRouter;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver;
 use Symfony\Component\Yaml\Yaml;
 use Skalar\Request;
+use Skalar\AdvancedLoader;
 
 /**
  * Class Router
@@ -71,6 +71,8 @@ class Router extends \CBitrixComponent
      */
     public function executeComponent()
     {
+        $this->setLoader($this->getFullTemplateFolder($this->restDir));
+        $this->setLoader($this->getFullTemplateFolder($this->controllersDir));
         $this->initConfig();
         $this->request = Request::createFromGlobals();
         $this->request->setBaseUrl($this->getBaseUrl());
@@ -78,13 +80,9 @@ class Router extends \CBitrixComponent
         $state = $this->getState();
         $state = $this->runMiddleware($state);
         try {
-            if($this->isRest()) {
-                $state = $this->executeRestController($state);
-            } else {
-                $parameters = $this->router->matchRequest($this->request);
-                $this->request->attributes->add($parameters);
-                $state = $this->executeController($state);
-            }
+            $parameters = $this->router->matchRequest($this->request);
+            $this->request->attributes->add($parameters);
+            $state = $this->executeController($state);
         } catch(\Exception $e) {
             $state = $this->callController('NotFoundController::index', $state);
         }
@@ -167,11 +165,21 @@ class Router extends \CBitrixComponent
         $requestContext->fromRequest($this->request);
         $requestContext->setBaseUrl('/path');
         $this->router = new SymfonyRouter(
-            new YamlFileLoader($fileLocator),
+            new AdvancedLoader($fileLocator, $this->getAllFolderFiles($this->restDir)),
             $this->config['paths']['routes'],
             array(),
             $requestContext
         );
+    }
+
+    private function setLoader($folder){
+        spl_autoload_register(function($class) use ($folder)
+        {
+            $file = rtrim($folder, '/') . '/' . trim($class, '\\') . '.php';
+            if (file_exists($file)) {
+                require_once $file;
+            }
+        });
     }
 
     /**
@@ -204,83 +212,9 @@ class Router extends \CBitrixComponent
      */
     private function executeController(array $state)
     {
-        $this->loadController();
         $controllerResolver = new ControllerResolver();
         $controller = $controllerResolver->getController($this->request);
         return \call_user_func_array($controller, [$this->request, $state]);
-    }
-
-    /**
-     * @param array $state
-     * @return mixed
-     */
-    private function executeRestController(array $state)
-    {
-        $controller = $this->getRestControllerParams();
-        $this->loadRestController($controller);
-        $callable = $this->getRestController($controller);
-        if (!\is_callable($callable)) {
-            throw new \InvalidArgumentException(sprintf('The controller %s is not callable.', $callable));
-        }
-        return \call_user_func_array($callable, [$this->request, $state]);
-
-    }
-
-    /**
-     * @return bool
-     */
-    protected function isRest() {
-        return explode('/', trim($this->request->getPathInfo(), '/'))[0] == $this->restRoute;
-    }
-
-    /**
-     * @return array
-     */
-    protected function getRestControllerParams()
-    {
-        $pathInfo = trim($this->request->getPathInfo(), '/');
-        $arPaths = explode('/', $pathInfo);
-        array_shift($arPaths);
-        $controller = ucfirst(array_shift($arPaths));
-        if(!empty($arPaths)) {
-            throw new NotFoundHttpException(sprintf('URI "%s" is not exist.', $this->request->getPathInfo()));
-        }
-        if(empty($controller)) {
-            throw new \InvalidArgumentException(sprintf('Controller "%s" for URI "%s" is not exist.', $controller, $this->request->getPathInfo()));
-        }
-        $action = strtolower($this->request->getMethod());
-        if(empty($action)) {
-            throw new \InvalidArgumentException(sprintf('Action "%s" for URI "%s" is not exist.', $action, $this->request->getPathInfo()));
-        }
-        return [
-            $controller,
-            $action
-        ];
-    }
-
-    /**
-     * @param array $controller
-     */
-    private function loadRestController(array $controller)
-    {
-        $class = $controller[0];
-        $classPath = $this->getFullTemplateFolder($this->restDir) . '/' . $class . '.php';
-        if(file_exists($classPath)) {
-            require_once($classPath);
-        } else {
-            throw new NotFoundHttpException(sprintf('Controller "%s" for URI "%s" is not exist.', $class, $this->request->getPathInfo()));
-        }
-    }
-
-    /**
-     * @param array $controller
-     * @return array
-     */
-    private function getRestController(array $controller) {
-        return [
-            $this->instantiateClass($controller[0]),
-            $controller[1]
-        ];
     }
 
     /**
@@ -290,7 +224,6 @@ class Router extends \CBitrixComponent
      */
     public function callController($controller, $state, array $arguments = [])
     {
-        $this->loadController($controller);
         $callable = $this->createController($controller);
         if (!\is_callable($callable)) {
             throw new \InvalidArgumentException(sprintf('The controller %s is not callable.', $callable));
@@ -299,28 +232,6 @@ class Router extends \CBitrixComponent
             $this->request->attributes->add($arguments);
         }
         return \call_user_func_array($callable, [$this->request, $state]);
-    }
-
-    /**
-     * @param string $class
-     */
-    private function loadController($class = '') {
-        $class = empty($class) ? $this->request->attributes->get('_controller') : $class;
-        $class = explode('::', $class)[0];
-        $arClassPath = [
-            'templates',
-            $this->getTemplateNameExt()
-        ];
-        $arClass = explode('\\', $class);
-        $arClassPath[] = stripos(reset($arClass), $this->restDir) !== false ? $this->restDir : $this->controllersDir;
-        $className = end($arClass);
-        $arClassPath[] = $className;
-        $classPath = $_SERVER['DOCUMENT_ROOT'].$this->getPath().'/'.implode('/', $arClassPath).'.php';
-        if(file_exists($classPath)) {
-            require_once($classPath);
-        } else {
-            throw new NotFoundHttpException(sprintf('Controller "%s" for URI "%s" is not exist.', $class, $this->request->getPathInfo()));
-        }
     }
 
     /**

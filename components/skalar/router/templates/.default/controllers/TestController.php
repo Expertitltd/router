@@ -15,7 +15,6 @@ class TestController extends Controller
      */
     public function test(Request $request, array $state)
     {
-        $param = $request->get('param');
         // do something
         return $state;
     }
