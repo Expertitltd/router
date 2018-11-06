@@ -28,7 +28,7 @@
   },
   "autoload": {
     "psr-0": {
-      "Skalar\\Router": "src"
+      "Skalar": "src"
     }
   }
 }
