@@ -8,6 +8,7 @@ use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Router as SymfonyRouter;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Yaml\Yaml;
 use Skalar\Request;
 use Skalar\AdvancedLoader;
@@ -71,8 +72,7 @@ class Router extends \CBitrixComponent
      */
     public function executeComponent()
     {
-        $this->setLoader($this->getFullTemplateFolder($this->restDir));
-        $this->setLoader($this->getFullTemplateFolder($this->controllersDir));
+        $this->setLoaders();
         $this->initConfig();
         $this->request = Request::createFromGlobals();
         $this->request->setBaseUrl($this->getBaseUrl());
@@ -83,11 +83,13 @@ class Router extends \CBitrixComponent
             $parameters = $this->router->matchRequest($this->request);
             $this->request->attributes->add($parameters);
             $state = $this->executeController($state);
-        } catch(\Exception $e) {
+            $status = Response::HTTP_OK;
+        } catch (\Exception $e) {
             $state = $this->callController('NotFoundController::index', $state);
+            $status = Response::HTTP_NOT_FOUND;
         }
-        $response = $this->render($state);
-        $this->echoResponse($response);
+        $content = $this->render($state);
+        $this->sendResponse($content, $status);
     }
 
     /**
@@ -102,12 +104,14 @@ class Router extends \CBitrixComponent
     }
 
     /**
-     * @param $response
+     * @param $content
+     * @param int $status
      */
-    protected function echoResponse($response)
+    protected function sendResponse($content, $status = Response::HTTP_OK)
     {
-        echo $response;
-        exit();
+        $response = new Response($content);
+        $response->setStatusCode($status);
+        $response->send();
     }
 
     /**
@@ -132,6 +136,12 @@ class Router extends \CBitrixComponent
                 throw new \Exception(sprintf('%s module not included!', $module));
             }
         }
+    }
+
+    private function setLoaders()
+    {
+        $this->setLoader($this->getFullTemplateFolder($this->restDir));
+        $this->setLoader($this->getFullTemplateFolder($this->controllersDir));
     }
 
     /**
