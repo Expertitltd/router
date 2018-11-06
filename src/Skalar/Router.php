@@ -172,6 +172,9 @@ class Router extends \CBitrixComponent
         );
     }
 
+    /**
+     * @param $folder
+     */
     private function setLoader($folder){
         spl_autoload_register(function($class) use ($folder)
         {
