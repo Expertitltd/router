@@ -7,10 +7,10 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Router as SymfonyRouter;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver;
 use Symfony\Component\Yaml\Yaml;
+use Skalar\Request;
 
 /**
  * Class Router
@@ -73,6 +73,7 @@ class Router extends \CBitrixComponent
     {
         $this->initConfig();
         $this->request = Request::createFromGlobals();
+        $this->request->setBaseUrl($this->getBaseUrl());
         $this->initRouter();
         $state = $this->getState();
         try {
@@ -165,6 +166,7 @@ class Router extends \CBitrixComponent
         $fileLocator = new FileLocator(array(__DIR__));
         $requestContext = new RequestContext();
         $requestContext->fromRequest($this->request);
+        $requestContext->setBaseUrl('/path');
         $this->router = new SymfonyRouter(
             new YamlFileLoader($fileLocator),
             $this->config['paths']['routes'],
@@ -394,5 +396,13 @@ class Router extends \CBitrixComponent
         $fileList = scandir($dirPath);
         $fileList = array_diff($fileList, ['.', '..']);
         return array_values($fileList);
+    }
+
+    /**
+     * @return string
+     */
+    private function getBaseUrl()
+    {
+        return isset($this->arParams['BASE_URL']) ? $this->arParams['BASE_URL'] : '';
     }
 }
