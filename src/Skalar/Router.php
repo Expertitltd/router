@@ -53,12 +53,18 @@ class Router extends \CBitrixComponent
     private $restRoute;
 
     /**
+     * Bitrix module list
+     * @var array
+     */
+    private $moduleList = [];
+
+    /**
      * SkalarRouter constructor.
      * @param null $component
      */
     public function __construct($component = null)
     {
-        $this->restDir = $this->restRoute =  'rest';
+        $this->restDir = $this->restRoute = 'rest';
         $this->controllersDir = 'controllers';
         $this->configDir = 'config';
         $this->middlewareDir = 'middleware';
@@ -68,10 +74,14 @@ class Router extends \CBitrixComponent
     }
 
     /**
-     * @return mixed
+     * @return mixed|void
+     * @throws \Bitrix\Main\LoaderException
      */
     public function executeComponent()
     {
+        $this->moduleList = $this->getModuleList();
+        $this->includeModules();
+
         $this->setLoaders();
         $this->initConfig();
         $this->request = Request::createFromGlobals();
@@ -88,7 +98,7 @@ class Router extends \CBitrixComponent
             $state = $this->callController('NotFoundController::index', $state);
             $status = Response::HTTP_NOT_FOUND;
         }
-        $content = $this->render($state);
+        $content = $this->render($state, $this->request->getPathInfo());
         $this->sendResponse($content, $status);
     }
 
@@ -97,7 +107,7 @@ class Router extends \CBitrixComponent
      * @return string
      * @todo get and call render function from External class (from config)
      */
-    protected function render(array $state)
+    protected function render(array $state, $url)
     {
         $response = json_encode($state);
         return $response;
@@ -120,24 +130,37 @@ class Router extends \CBitrixComponent
      */
     protected function getState()
     {
-        $state = [];
-        $state['state'] = 'state';
-        return $state;
+        return [];
     }
 
     /**
-     * @param array $modules
-     * @throws \Exception
+     * Initialize module list for loading from bitrix.
+     * Can be reload in user class
+     *
+     * @return array
      */
-    protected function includeModules(array $modules)
+    protected function getModuleList()
     {
-        foreach($modules as $module) {
-            if(!Loader::includeModule($module)) {
-                throw new \Exception(sprintf('%s module not included!', $module));
+        return [];
+    }
+
+    /**
+     * @throws \Bitrix\Main\LoaderException
+     */
+    protected function includeModules()
+    {
+        if (sizeof($this->moduleList)) {
+            foreach($this->moduleList as $module) {
+                if(!Loader::includeModule($module)) {
+                    throw new \Exception(sprintf('%s module not included!', $module));
+                }
             }
         }
     }
 
+    /**
+     *
+     */
     private function setLoaders()
     {
         $this->setLoader($this->getFullTemplateFolder($this->restDir));
