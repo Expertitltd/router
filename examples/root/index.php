@@ -1,7 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: max
- * Date: 08.11.18
- * Time: 10:57
- */
+
+require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/prolog_before.php");
+
+\CModule::IncludeModule("expertit.site");
+
+$APPLICATION->IncludeComponent(
+    "skalar:router",
+    "",
+    []
+);
