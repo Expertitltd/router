@@ -41,7 +41,7 @@ class AdvancedLoader extends YamlFileLoader
             $methods = $reflectionClass->getMethods();
             if (!empty($methods) && is_array($methods)) {
                 foreach($methods as $method) {
-                    $path = '/rest/' . strtolower($method->class);
+                    $path = '/rest/' . strtolower($method->class) . '/';
                     $defaults = [
                         '_controller' => $method->class . '::' . $method->name,
                     ];
