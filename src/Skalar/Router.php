@@ -57,6 +57,14 @@ class Router extends \CBitrixComponent
      * @var array
      */
     private $moduleList = [];
+    /**
+     * @var \Skalar\Controller\Base
+     */
+    private $controller;
+    /**
+     * @var string
+     */
+    private $action;
 
     /**
      * SkalarRouter constructor.
@@ -93,34 +101,33 @@ class Router extends \CBitrixComponent
             $parameters = $this->router->matchRequest($this->request);
             $this->request->attributes->add($parameters);
             $state = $this->executeController($state);
-            $status = Response::HTTP_OK;
         } catch (\Exception $e) {
             $state = $this->callController('NotFoundController::index', $state);
-            $status = Response::HTTP_NOT_FOUND;
+            $this->controller->setStatus(Response::HTTP_NOT_FOUND);
         }
         $content = $this->render($state, $this->request->getPathInfo());
-        $this->sendResponse($content, $status);
+        $this->sendResponse($content);
     }
 
     /**
      * @param array $state
+     * @param $url
      * @return string
-     * @todo get and call render function from External class (from config)
      */
     protected function render(array $state, $url)
     {
-        $response = json_encode($state);
-        return $response;
+        return \call_user_func_array([$this->controller, 'render'], [$state, $url]);
     }
 
     /**
      * @param $content
      * @param int $status
      */
-    protected function sendResponse($content, $status = Response::HTTP_OK)
+    protected function sendResponse($content)
     {
         $response = new Response($content);
-        $response->setStatusCode($status);
+        $response->setStatusCode($this->controller->getStatus());
+        $response->headers = $this->controller->getHeaders();
         $response->send();
     }
 
@@ -250,6 +257,7 @@ class Router extends \CBitrixComponent
     {
         $controllerResolver = new ControllerResolver();
         $controller = $controllerResolver->getController($this->request);
+        $this->setController($controller);
         return \call_user_func_array($controller, [$this->request, $state]);
     }
 
@@ -293,6 +301,12 @@ class Router extends \CBitrixComponent
             throw new \InvalidArgumentException(sprintf('Class "%s" does not exist.', $class));
         }
         return new $class();
+    }
+
+    private function setController(array $controller)
+    {
+        $this->controller = $controller[0];
+        $this->action = $controller[1];
     }
 
     /**
