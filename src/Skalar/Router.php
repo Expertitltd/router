@@ -272,6 +272,7 @@ class Router extends \CBitrixComponent
         if (!\is_callable($callable)) {
             throw new \InvalidArgumentException(sprintf('The controller %s is not callable.', $callable));
         }
+        $this->setController($controller);
         if($arguments) {
             $this->request->attributes->add($arguments);
         }
