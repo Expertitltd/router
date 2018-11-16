@@ -1,6 +1,6 @@
 <?php
 
-use Skalar\Controller;
+use Skalar\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
