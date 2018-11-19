@@ -107,6 +107,7 @@ class Router extends \CBitrixComponent
             $this->request->attributes->add($parameters);
             $state = $this->executeController($state);
         } catch (\Exception $e) {
+            var_dump($e->getMessage());
             $state = $this->callController('NotFoundController::index', $state);
             $this->controller->setStatus(Response::HTTP_NOT_FOUND);
         }
@@ -280,7 +281,7 @@ class Router extends \CBitrixComponent
         if (!\is_callable($callable)) {
             throw new \InvalidArgumentException(sprintf('The controller %s is not callable.', $callable));
         }
-        $this->setController($controller);
+        $this->setController($callable);
         if($arguments) {
             $this->request->attributes->add($arguments);
         }

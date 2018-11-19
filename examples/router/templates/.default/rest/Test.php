@@ -2,12 +2,11 @@
 
 use Skalar\RestMethods;
 use Symfony\Component\HttpFoundation\Request;
-use \Skalar\Controller\Api;
 
 /**
  * Class Test
  */
-class Test extends Api implements RestMethods
+class Test implements RestMethods
 {
     /**
      * @param Request $request
