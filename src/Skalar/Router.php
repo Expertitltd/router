@@ -30,6 +30,10 @@ class Router extends \CBitrixComponent
     /**
      * @var
      */
+    private $classesDir;
+    /**
+     * @var
+     */
     private $router;
     /**
      * @var
@@ -74,6 +78,7 @@ class Router extends \CBitrixComponent
     {
         $this->restDir = $this->restRoute = 'rest';
         $this->controllersDir = 'controllers';
+        $this->classesDir = 'classes';
         $this->configDir = 'config';
         $this->middlewareDir = 'middleware';
         $this->config = [];
@@ -116,7 +121,7 @@ class Router extends \CBitrixComponent
      */
     protected function render(array $state, $url)
     {
-        return \call_user_func_array([$this->controller, 'render'], [$state, $url]);
+        return $this->controller->getRender()($state, $url);
     }
 
     /**
@@ -172,6 +177,7 @@ class Router extends \CBitrixComponent
     {
         $this->setLoader($this->getFullTemplateFolder($this->restDir));
         $this->setLoader($this->getFullTemplateFolder($this->controllersDir));
+        $this->setLoader($this->getFullTemplateFolder($this->classesDir));
     }
 
     /**
@@ -218,7 +224,9 @@ class Router extends \CBitrixComponent
     private function setLoader($folder){
         spl_autoload_register(function($class) use ($folder)
         {
-            $file = rtrim($folder, '/') . '/' . trim($class, '\\') . '.php';
+            $arClass = explode('\\', trim($class, '\\'));
+            $class = end($arClass);
+            $file = rtrim($folder, '/') . '/' . $class . '.php';
             if (file_exists($file)) {
                 require_once $file;
             }

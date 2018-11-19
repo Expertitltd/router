@@ -50,9 +50,11 @@ abstract class Base
      * @param $url
      * @return string
      */
-    public function render(array $state, $url = '')
+    public function getRender()
     {
-        return json_encode($state);
+        return function (array $state, $url = '') {
+            return json_encode($state);
+        };
     }
 
     /**
