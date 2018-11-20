@@ -15,6 +15,11 @@ class RestRouter extends Router
      * @var string
      */
     private $controllersFolder = 'rest/controllers';
+    private $params = [
+        '',
+        'param1',
+        'param2',
+    ];
 
     /**
      *
@@ -44,17 +49,23 @@ class RestRouter extends Router
             $reflectionClass = new \ReflectionClass('\\' . ltrim(str_replace('.php', '', $file), '\\'));
             $className = $reflectionClass->getName();
             $methods = $reflectionClass->getMethods();
-            echo '<pre>';
             if (!empty($methods) && is_array($methods)) {
                 foreach($methods as $method) {
                     if ($method->getDeclaringClass()->getName() == $className) {
                         $path = '/rest/' . strtolower($className) . '/';
-                        $defaults = [
-                            '_controller' => $className . '::' . $method->name,
-                        ];
-                        $route = new Route($path, $defaults);
-                        $route->setMethods([$method->name]);
-                        $routes[$method->name . $className] = $route;
+                        $routeName = $method->name . $className;
+                        foreach ($this->params as $param) {
+                            if (!empty($param)) {
+                                $path .= '{' . $param . '}/';
+                                $routeName .= ucfirst($param);
+                            }
+                            $defaults = [
+                                '_controller' => $className . '::' . $method->name,
+                            ];
+                            $route = new Route($path, $defaults);
+                            $route->setMethods([$method->name]);
+                            $routes[$routeName] = $route;
+                        }
                     }
                 }
             }

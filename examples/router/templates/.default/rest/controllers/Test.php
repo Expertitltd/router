@@ -17,6 +17,9 @@ class Test extends Api implements RestMethods
     public function get(Request $request, array $state)
     {
         // TODO: Implement get() method.
+        $state[] = 'rest';
+        $state['param1'] = $request->get('param1');
+        $state['param2'] = $request->get('param2');
         return $state;
     }
 
