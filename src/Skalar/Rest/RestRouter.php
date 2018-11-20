@@ -14,8 +14,11 @@ class RestRouter extends Router
     /**
      * @var string
      */
-    private $controllersFolder = 'rest/controllers';
-    private $params = [
+    protected $controllersFolder = 'rest/controllers';
+    /**
+     * @var array
+     */
+    protected $params = [
         '',
         'param1',
         'param2',
