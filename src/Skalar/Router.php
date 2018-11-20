@@ -22,7 +22,11 @@ class Router extends \CBitrixComponent
     /**
      * @var string
      */
-    private $restDir;
+    private $apiDir;
+    /**
+     * @var string
+     */
+    private $apiNamespace;
     /**
      * @var string
      */
@@ -76,11 +80,13 @@ class Router extends \CBitrixComponent
      */
     public function __construct($component = null)
     {
-        $this->restDir = $this->restRoute = 'rest';
+        $this->restRoute = 'rest';
         $this->controllersDir = 'controllers';
         $this->classesDir = 'classes';
         $this->configDir = 'config';
         $this->middlewareDir = 'middleware';
+        $this->apiDir = 'api';
+        $this->apiNamespace = '\\Skalar\\Api';
         $this->config = [];
 
         parent::__construct($component);
@@ -107,7 +113,7 @@ class Router extends \CBitrixComponent
             $this->request->attributes->add($parameters);
             $state = $this->executeController($state);
         } catch (\Exception $e) {
-            var_dump($e->getMessage());
+//            var_dump($e->getMessage());
             $state = $this->callController('NotFoundController::index', $state);
             $this->controller->setStatus(Response::HTTP_NOT_FOUND);
         }
@@ -127,7 +133,6 @@ class Router extends \CBitrixComponent
 
     /**
      * @param $content
-     * @param int $status
      */
     protected function sendResponse($content)
     {
@@ -176,7 +181,7 @@ class Router extends \CBitrixComponent
      */
     private function setLoaders()
     {
-        $this->setLoader($this->getFullTemplateFolder($this->restDir));
+        $this->setLoader($this->getFullTemplateFolder($this->apiDir));
         $this->setLoader($this->getFullTemplateFolder($this->controllersDir));
         $this->setLoader($this->getFullTemplateFolder($this->classesDir));
     }
@@ -212,7 +217,7 @@ class Router extends \CBitrixComponent
         $requestContext->fromRequest($this->request);
         $requestContext->setBaseUrl('/path');
         $this->router = new SymfonyRouter(
-            new AdvancedLoader($fileLocator, $this->getAllFolderFiles($this->restDir)),
+            new AdvancedLoader($fileLocator, $this->getFullTemplateFolder(), $this->apiDir, $this->apiNamespace),
             $this->config['paths']['routes'],
             array(),
             $requestContext
@@ -313,6 +318,9 @@ class Router extends \CBitrixComponent
         return new $class();
     }
 
+    /**
+     * @param array $controller
+     */
     private function setController(array $controller)
     {
         $this->controller = $controller[0];

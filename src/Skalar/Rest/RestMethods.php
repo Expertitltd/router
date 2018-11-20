@@ -1,12 +1,12 @@
 <?php
 
-namespace Skalar;
+namespace Skalar\Rest;
 
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Interface RestMethods
- * @package Skalar
+ * @package Skalar\Rest
  */
 interface RestMethods
 {
