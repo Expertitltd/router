@@ -2,13 +2,13 @@
 
 namespace Skalar\Api;
 
-use Skalar\Rest\RestRouter;
+use Skalar\Rest\Rest;
 
 /**
  * Class Rest
  * @package Skalar\Api
  */
-class Rest extends RestRouter
+class Rest extends Rest
 {
 
 }

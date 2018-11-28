@@ -1,5 +1,6 @@
 <?php
-namespace Skalar\Api;
+
+namespace Skalar\Routing;
 
 /**
  * Class Router
