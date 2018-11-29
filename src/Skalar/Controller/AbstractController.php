@@ -3,6 +3,8 @@ namespace Skalar\Controller;
 
 use \Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\Response;
+use Skalar\Routing\Middleware;
+use Skalar\Request;
 
 /**
  * Class AbstractController
@@ -63,5 +65,20 @@ abstract class AbstractController
     public function getHeaders()
     {
         return $this->headers;
+    }
+
+    /**
+     * @param array $state
+     * @param string $dir
+     * @param Request|null $request
+     * @return array
+     */
+    public function runMiddleware(array $state, $dir = '', Request $request = null)
+    {
+        if (empty($dir) || empty($request)) {
+            return $state;
+        }
+        $middleware = new Middleware($dir);
+        return $middleware->execute($request, $state);
     }
 }

@@ -16,6 +16,7 @@ class ExampleMiddleware
     public function __invoke(Request $request, array $state)
     {
         // do something
+        $state[] = 'middleware';
         return $state;
     }
 }

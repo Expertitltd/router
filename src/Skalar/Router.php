@@ -98,7 +98,6 @@ class Router extends \CBitrixComponent
         $this->request->setBaseUrl($this->getBaseUrl());
         $this->initRouter();
         $state = $this->getState();
-//        $state = $this->runMiddleware($state);
 
         try {
             $parameters = $this->router->matchRequest($this->request);
@@ -249,6 +248,8 @@ class Router extends \CBitrixComponent
         $controller = $controllerResolver->getController($this->request);
         $this->setController($controller);
 
+        $state = $this->controller->runMiddleware($state, $this->getFullTemplateFolder($this->middlewareDir), $this->request);
+
         return \call_user_func_array($controller, [$this->request, $state]);
     }
 
@@ -265,6 +266,9 @@ class Router extends \CBitrixComponent
         }
 
         $this->setController($callable);
+
+        $state = $this->controller->runMiddleware($state, $this->getFullTemplateFolder($this->middlewareDir), $this->request);
+
         if($arguments) {
             $this->request->attributes->add($arguments);
         }
