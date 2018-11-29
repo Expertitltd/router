@@ -24,7 +24,9 @@
     "symfony/config": "^3.4",
     "symfony/dependency-injection": "^3.4",
     "symfony/yaml": "^3.4",
-    "symfony/http-kernel": "^3.4"
+    "symfony/http-kernel": "^3.4",
+    "overblog/graphql-bundle": "0.11.x-dev",
+    "webonyx/graphql-php": "0.12.x-dev"
   },
   "autoload": {
     "psr-0": {
