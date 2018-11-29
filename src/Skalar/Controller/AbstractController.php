@@ -5,10 +5,10 @@ use \Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Class Base
+ * Class AbstractController
  * @package Skalar\Controller
  */
-abstract class Base
+abstract class AbstractController
 {
     /**
      * @var ResponseHeaderBag

@@ -15,6 +15,10 @@ use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Routing\RouteCollection;
 
 
+/**
+ * Class ApiLoader
+ * @package Skalar\Loader
+ */
 class ApiLoader extends YamlFileLoader
 {
     /**
@@ -25,7 +29,7 @@ class ApiLoader extends YamlFileLoader
     /**
      * @var string
      */
-    private $folder;
+    private $folders;
 
     /**
      * @var
@@ -36,19 +40,21 @@ class ApiLoader extends YamlFileLoader
      * @var string
      */
     private $apiNamespace = '\\Skalar\\Api\\';
+    /**
+     * @var string
+     */
+    private $srcApiFolder = __DIR__ . '/../Api';
 
     /**
      * ApiLoader constructor.
-     * @param string $folder
+     * @param array $folders
      * @param string $templateFolder
      */
-    public function __construct(
-        $folder = '',
-        $templateFolder = ""
-    ) {
+    public function __construct($templateFolder = "", $folders = [])
+    {
         $locator = new FileLocator([__DIR__]);
 
-        $this->folder = $folder;
+        $this->folders = $folders;
         $this->templateFolder = $templateFolder;
 
         parent::__construct($locator);
@@ -65,9 +71,13 @@ class ApiLoader extends YamlFileLoader
 
         $routes = [];
         $apiFiles = array_merge(
-            $this->getFiles($this->folder),
-            $this->getFiles($this->templateFolder . "/api")
+            $this->getFiles($this->templateFolder . "/api"),
+            $this->getFiles($this->srcApiFolder)
+
         );
+        foreach ($this->folders as $folder) {
+            $apiFiles = array_merge($apiFiles, $this->getFiles($folder));
+        }
 
         foreach ($apiFiles as $file) {
             $class = $this->apiNamespace . pathinfo($file, PATHINFO_FILENAME);
@@ -91,6 +101,7 @@ class ApiLoader extends YamlFileLoader
     }
 
     /**
+     * @param $dirPath
      * @return array
      */
     protected function getFiles($dirPath)

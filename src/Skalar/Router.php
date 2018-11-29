@@ -215,10 +215,7 @@ class Router extends \CBitrixComponent
         $requestContext->setBaseUrl('/path');
 
         $this->router = new SymfonyRouter(
-            new ApiLoader(
-                __DIR__ . "/Api",
-                $this->getFullTemplateFolder()
-            ),
+            new ApiLoader($this->getFullTemplateFolder()),
             $this->config['paths']['routes'],
             [],
             $requestContext

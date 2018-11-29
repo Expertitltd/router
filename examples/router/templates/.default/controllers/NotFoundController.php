@@ -1,12 +1,12 @@
 <?php
 
-use Skalar\Controller\Controller;
+use Skalar\Controller\PublicController;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Class NotFoundController
  */
-class NotFoundController extends Controller
+class NotFoundController extends PublicController
 {
     /**
      * @param Request $request

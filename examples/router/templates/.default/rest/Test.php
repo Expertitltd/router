@@ -1,13 +1,15 @@
 <?php
 
-use Skalar\Rest\RestMethods;
+namespace Skalar\Rest;
+
+use Skalar\Routing\RestMethods;
 use Symfony\Component\HttpFoundation\Request;
-use Skalar\Controller\Api;
+use Skalar\Controller\ApiController;
 
 /**
  * Class Test
  */
-class Test extends Api implements RestMethods
+class Test extends ApiController implements RestMethods
 {
     /**
      * @param Request $request

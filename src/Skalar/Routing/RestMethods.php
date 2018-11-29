@@ -1,6 +1,6 @@
 <?php
 
-namespace Skalar\Rest;
+namespace Skalar\Routing;
 
 use Symfony\Component\HttpFoundation\Request;
 

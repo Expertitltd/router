@@ -1,12 +1,12 @@
 <?php
 
-use Skalar\Controller\Controller;
+use Skalar\Controller\PublicController;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Class TestController
  */
-class TestController extends Controller
+class TestController extends PublicController
 {
     /**
      * @param Request $request
@@ -15,6 +15,7 @@ class TestController extends Controller
      */
     public function test(Request $request, array $state)
     {
+        $state[] = 'TestController::test';
         // do something
         return $state;
     }
