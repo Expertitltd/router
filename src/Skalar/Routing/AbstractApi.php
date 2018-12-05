@@ -12,17 +12,31 @@ use Symfony\Component\Routing\Route;
 abstract class AbstractApi
 {
 
+    /**
+     * @var string
+     */
     protected $controllersFolder = "";
+    /**
+     * @var string
+     */
     protected $templateFolder = "";
+    /**
+     * @var string
+     */
+    protected $libFolder = "lib";
+    /**
+     * @var string
+     */
+    protected $namespace = "Skalar";
 
     /**
      * AbstractApi constructor.
      * @param $templateFolder
-     * @param string $apiFolder
      */
     public function __construct($templateFolder)
     {
         $this->setTemplateFolder($templateFolder);
+        $this->setLoader($this->libFolder);
     }
 
     /**
@@ -51,7 +65,6 @@ abstract class AbstractApi
     }
 
     /**
-     * @param $folder
      * @return array
      */
     protected function getAllFolderFiles()
@@ -65,4 +78,21 @@ abstract class AbstractApi
      * @return mixed
      */
     abstract public function getRoutes();
+
+    /**
+     * @param string $folder
+     */
+    protected function setLoader($folder = '')
+    {
+        $path = $this->templateFolder . "/" . $this->controllersFolder . "/". trim($folder, '/');
+        spl_autoload_register(function($class) use ($path)
+        {
+            $classPath = str_replace('\\', '/', trim(str_replace($this->namespace . '\\', '', $class), '\\'));
+            $file = $path . '/' . $classPath . '.php';
+
+            if (file_exists($file)) {
+                require_once $file;
+            }
+        });
+    }
 }

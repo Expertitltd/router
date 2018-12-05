@@ -1,18 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: max
- * Date: 27.11.18
- * Time: 14:54
- */
 
 namespace Skalar\Api;
 
 use Skalar\Routing\AbstractApi;
 use \Skalar\Controller\Api;
-use Symfony\Component\HttpFoundation\Request;
-use \Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use Symfony\Component\HttpFoundation\Response;
 
 
 /**
@@ -21,12 +12,17 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class GraphQL extends AbstractApi
 {
+    /**
+     * @var string
+     */
     protected $controllersFolder = 'graphql';
 
+    /**
+     * @return array
+     */
     public function getRoutes()
     {
         $routes = [];
-        $files = $this->getAllFolderFiles();
 
         require_once($this->templateFolder . "/" . $this->controllersFolder . "/GraphQL.php");
 
@@ -41,8 +37,6 @@ class GraphQL extends AbstractApi
             $defaults,
             "post"
         );
-
-//        var_dump($routes);
 
         return $routes;
     }
