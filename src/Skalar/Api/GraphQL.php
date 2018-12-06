@@ -5,6 +5,9 @@ namespace Skalar\Api;
 use Skalar\Routing\AbstractApi;
 use \Skalar\Controller\Api;
 
+//use GraphQL\GraphQL as GQL;
+//use GraphQL\Schema;
+//use Skalar\Type\Types;
 
 /**
  * Class GraphQL
@@ -16,6 +19,12 @@ class GraphQL extends AbstractApi
      * @var string
      */
     protected $controllersFolder = 'graphql';
+    protected $libFolder = "";
+
+    public function __construct($templateFolder)
+    {
+        parent::__construct($templateFolder);
+    }
 
     /**
      * @return array
@@ -24,12 +33,18 @@ class GraphQL extends AbstractApi
     {
         $routes = [];
 
-        require_once($this->templateFolder . "/" . $this->controllersFolder . "/GraphQL.php");
+        $files = $this->getAllFolderFiles();
+        foreach ($files as $file) {
+            $filePath = $this->templateFolder . "/" . $this->controllersFolder . "/" . $file;
+            if (file_exists($filePath)) {
+                require_once($filePath);
+            }
+        }
 
         $path = '/' . $this->controllersFolder . '/';
 
         $defaults = [
-            '_controller' => '\Skalar\GraphQL\GraphQL::execute',
+            '_controller' => '\\Skalar\\GraphQL\\GraphQLController::execute',
         ];
 
         $routes[$this->controllersFolder] = $this->addRoute(
@@ -40,4 +55,5 @@ class GraphQL extends AbstractApi
 
         return $routes;
     }
+
 }
