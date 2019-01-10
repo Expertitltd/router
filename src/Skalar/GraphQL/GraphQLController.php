@@ -66,6 +66,7 @@ class GraphQLController extends ApiController
     {
         return new Schema([
             'query' => Types::query(),
+            'mutation' => Types::mutation(),
         ]);
     }
 }
